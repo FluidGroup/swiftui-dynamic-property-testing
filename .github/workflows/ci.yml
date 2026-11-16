@@ -5,20 +5,26 @@ on:
     branches: [main]
   pull_request:
 
+permissions:
+  contents: read
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+
 jobs:
   macos:
     name: macOS tests
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: swift test
       - run: swift test --configuration release
 
   ios:
     name: iOS Simulator tests
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Run tests
         run: |
           device_id=$(xcrun simctl list devices available -j | python3 -c '
@@ -36,7 +42,7 @@ jobs:
 
   platforms:
     name: Build ${{ matrix.triple }}
-    runs-on: macos-15
+    runs-on: macos-26
     strategy:
       fail-fast: false
       matrix:
@@ -54,7 +60,7 @@ jobs:
           - sdk: xrsimulator
             triple: arm64-apple-xros1.0-simulator
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build
         env:
           SDK: ${{ matrix.sdk }}
@@ -66,9 +72,9 @@ jobs:
 
   catalyst:
     name: Mac Catalyst build
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Build
         run: |
           xcodebuild build \
