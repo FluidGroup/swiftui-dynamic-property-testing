@@ -4,9 +4,11 @@ Test a `DynamicProperty` struct with real SwiftUI state storage and ordinary pro
 
 ## Motivation
 
-A plain struct stored in a single `@State` is easy to test, but the whole value shares one state dependency. Reading `model.count` makes the view depend on that state slot, so changing an unrelated field can invalidate the view too. Mutating a large aggregate can also add copy costs, depending on its contents and compiler optimizations.
+A `DynamicProperty` struct can group state and behavior while keeping independently changing values in separate `@State` properties. SwiftUI tracks which state properties a view reads, so changing an unread state property need not reevaluate the view's `body`.
 
-Instead, a `DynamicProperty` struct can hold small, independent `@State` values. SwiftUI tracks the state properties the view actually reads. Testing this design should not require moving the entire model into one large `@State` just to make it testable.
+A plain struct stored in a single `@State` shares one state dependency: reading `model.count` can make a change to `model.query` reevaluate the view's `body` too. Testing should not require changing that dependency structure.
+
+Simply constructing a `DynamicProperty` in a test does not connect its `@State` properties to SwiftUI's managed storage. This library makes that connection so tests can use ordinary property access while preserving the production state design.
 
 ## Usage
 
