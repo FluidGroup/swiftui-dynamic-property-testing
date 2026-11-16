@@ -132,6 +132,7 @@ private final class Model: ObservableObject {
 
 }
 
+@MainActor
 private struct ObjectState: DynamicProperty {
 
   @StateObject var model = Model()
