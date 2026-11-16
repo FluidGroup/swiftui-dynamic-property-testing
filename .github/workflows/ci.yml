@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    name: macOS tests
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v7
+      - run: swift test
+      - run: swift test --configuration release
+
+  ios:
+    name: iOS Simulator tests
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v7
+      - name: Run tests
+        run: |
+          device_id=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          print(next(device["udid"] for runtime, entries in devices.items()
+                     if ".iOS-" in runtime for device in entries
+                     if device["name"].startswith("iPhone")))
+          ')
+          xcodebuild test \
+            -scheme swiftui-dynamic-property-testing \
+            -destination "platform=iOS Simulator,id=$device_id" \
+            -derivedDataPath .build/ios \
+            CODE_SIGNING_ALLOWED=NO
+
+  platforms:
+    name: Build ${{ matrix.triple }}
+    runs-on: xcode-27
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - sdk: appletvos
+            triple: arm64-apple-tvos16.0
+          - sdk: appletvsimulator
+            triple: arm64-apple-tvos16.0-simulator
+          - sdk: watchos
+            triple: arm64_32-apple-watchos9.0
+          - sdk: watchsimulator
+            triple: arm64-apple-watchos9.0-simulator
+          - sdk: xros
+            triple: arm64-apple-xros1.0
+          - sdk: xrsimulator
+            triple: arm64-apple-xros1.0-simulator
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build
+        env:
+          SDK: ${{ matrix.sdk }}
+          TARGET_TRIPLE: ${{ matrix.triple }}
+        run: |
+          swift build \
+            --triple "$TARGET_TRIPLE" \
+            --sdk "$(xcrun --sdk "$SDK" --show-sdk-path)"
+
+  catalyst:
+    name: Mac Catalyst build
+    runs-on: xcode-27
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build
+        run: |
+          xcodebuild build \
+            -scheme swiftui-dynamic-property-testing \
+            -destination 'platform=macOS,variant=Mac Catalyst' \
+            -derivedDataPath .build/catalyst \
+            CODE_SIGNING_ALLOWED=NO
