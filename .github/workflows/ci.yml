@@ -8,13 +8,10 @@ on:
 permissions:
   contents: read
 
-env:
-  DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
-
 jobs:
   macos:
     name: macOS tests
-    runs-on: macos-26
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v7
       - run: swift test
@@ -22,7 +19,7 @@ jobs:
 
   ios:
     name: iOS Simulator tests
-    runs-on: macos-26
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v7
       - name: Run tests
@@ -42,7 +39,7 @@ jobs:
 
   platforms:
     name: Build ${{ matrix.triple }}
-    runs-on: macos-26
+    runs-on: xcode-27
     strategy:
       fail-fast: false
       matrix:
@@ -72,7 +69,7 @@ jobs:
 
   catalyst:
     name: Mac Catalyst build
-    runs-on: macos-26
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v7
       - name: Build
