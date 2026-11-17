@@ -20,20 +20,15 @@ jobs:
   ios:
     name: iOS Simulator tests
     runs-on: xcode-27
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
     steps:
       - uses: actions/checkout@v7
       - name: Run tests
         run: |
-          device_id=$(xcrun simctl list devices available -j | python3 -c '
-          import json, sys
-          devices = json.load(sys.stdin)["devices"]
-          print(next(device["udid"] for runtime, entries in devices.items()
-                     if ".iOS-" in runtime for device in entries
-                     if device["name"].startswith("iPhone")))
-          ')
           xcodebuild test \
             -scheme swiftui-dynamic-property-testing \
-            -destination "platform=iOS Simulator,id=$device_id" \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=27.2' \
             -derivedDataPath .build/ios \
             CODE_SIGNING_ALLOWED=NO
 
